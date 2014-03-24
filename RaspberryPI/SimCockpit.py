@@ -6,7 +6,7 @@ import time
 import logging
 import socket
 
-HOST = '10.20.0.122'
+HOST = '10.20.0.90'
 PORT = 50007
 PIDFILE = '/var/run/simcockpit.pid'
 LOGFILE = '/var/log/simcockpit.log'
@@ -33,6 +33,7 @@ class SimCockpit(Daemon):
 		data = True
 		while data:
 			data = connection.recv(4096)
+			# extract pitch and roll and pass it to its engine controllers
 			logging.debug(data)
 
 	def run(self):
