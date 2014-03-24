@@ -25,7 +25,8 @@ class SimCockpit(Daemon):
 		self.socket.listen(5)
 
 	def closeSocket(self):
-		self.socket.close()
+		if self.socket != '':
+			self.socket.close()
 
 
 	def receive(self):
