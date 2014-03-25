@@ -6,7 +6,7 @@ import time
 import logging
 import socket
 
-HOST = '10.20.0.90'
+HOST = '10.20.0.90' # HOST = '10.20.0.92' in case of the second raspi
 PORT = 50008
 PIDFILE = '/var/run/simcockpit-controller.pid'
 LOGFILE = '/var/log/simcockpit-controller.log'
