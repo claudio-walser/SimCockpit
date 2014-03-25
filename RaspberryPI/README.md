@@ -10,6 +10,31 @@ The socket server will listen on 10.20.0.90:50007 for game input currently. Chan
 The main daemon is expecting yaw and pitch values at once, its extracting both values and passing each to a different raspberry via socket on port 50008. Those clients then control a stepper motor each.
 Two because for my model i dont want to wire up all the stuff for rotary, its easier to place one raspi inside the cage.
 
+diagram
+
+                                    +-----------------------+
+                                    |                       |
+                                    |      Game Export      |
+                                    |                       |
+                                    |                       |
+                                    +-----------+-----------+
+                                                |
+                                                | Coming on socket 50007 to one raspi
+                                                |
+                                                |
+                                       +-----------------+
+                                       |     Raspi Main  |
+                                       |                 |
+                                       | Splitting R/P   |
+                                       +--+-----------+--+
+  Passing roll to raspi 1 on socket 50008 |           | Passing pitch to raspi 2 on socket 50008
+                 +------------------+     |           |     +------------------+
+                 |  raspi 1 control |     |           |     |  raspi 2 control |
+                 |   stepper motor  |-----+           +-----|   stepper motor  |
+                 |                  |                       |                  |
+                 +------------------+                       +------------------+
+
+
 ## Dependencies
  - python >= 2.5.x
  - [python-daemon](https://github.com/martinrusev/python-daemon/ "python-daemon") for daemonizing the socket server.
