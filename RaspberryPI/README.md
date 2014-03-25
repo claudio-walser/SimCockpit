@@ -1,7 +1,7 @@
 # SimCockpit
 
 ## What the heck i am trying to do
-Its simple i want a cage to sit in, play flight simulator and make every movement the plane does in my cage.
+Its simple, i want a cage to sit in, play flight simulator and make every movement the plane does in my cage.
 As a "proof of concept" and "ask for an offer" i built the thing with around 50cm to 30cm to 15cm, means a small model.
 
 ## Rough concept since this is eeeeeeeeaaaaaaarly alpha stuff
