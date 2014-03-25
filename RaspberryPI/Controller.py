@@ -6,82 +6,36 @@ import time
 import logging
 import socket
 
-PIDFILE = '/var/run/simcockpit.pid'
-LOGFILE = '/var/log/simcockpit.log'
-
 HOST = '10.20.0.90'
-PORT = 50007
+PORT = 50008
+PIDFILE = '/var/run/simcockpit-controller.pid'
+LOGFILE = '/var/log/simcockpit-controller.log'
 
-PITCH_CLIENT = '10.20.0.90'
-PITCH_PORT = 50008
-
-ROLL_CLIENT = '10.20.0.92'
-ROLL_PORT = 50008
 
 # Configure logging
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG)
 
-class SimCockpit(Daemon):
+class SimCockpitController(Daemon):
 
 	socket = ''
-	socketPitch = ''
-	socketRoll = ''
-
 
 	def initSocket(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socketPitch = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socketRoll = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		
-		# listen on main port for game input
 		self.socket.bind((HOST, PORT))
 		self.socket.listen(5)
-
-		# connect pitch controller
-		self.socketPitch.connect((PITCH_CLIENT, PITCH_PORT))
-		self.socketRoll.connect((ROLL_CLIENT, ROLL_PORT))
 
 	def closeSocket(self):
 		if self.socket != '':
 			self.socket.close()
-		if self.socketPitch != '':
-			self.socketPitch.close()
-		if self.socketRoll != '':
-			self.socketRoll.close()
+
 
 	def receive(self):
 		(connection, address) = self.socket.accept()
 		data = True
 		while data:
 			data = connection.recv(4096)
-			
 			# extract pitch and roll and pass it to its engine controllers
-			lines = data.split("\n")
-			# not quite sure why, sometimes more lines are comming into this 4096 bytes, have to play with that
-			for line in lines:
-				if  line != '':
-					logging.debug(line)
-					values = line.split('|')
-					for value in values:
-					
-						label_value = value.split(':')
-						if len(label_value) == 2:
-							logging.debug(label_value)
-							logging.debug(len(label_value))
-							label = label_value[0]
-							value = label_value[1]
-							if label == 'Roll':
-								self.socketRoll.send(value)
-							elif label == 'Pitch':
-								self.socketPitch.send(value)
-
-			
-
-			
-			#self.socketPitch.send(data)
-			#self.socketRoll.send(data)
-			# log
-			#logging.debug(data)
+			logging.debug(data)
 
 	def run(self):
 		self.initSocket()
@@ -94,7 +48,7 @@ class SimCockpit(Daemon):
 
 if __name__ == "__main__":
 
-	daemon = SimCockpit(PIDFILE)
+	daemon = SimCockpitController(PIDFILE)
 
 	if len(sys.argv) == 2:
 
