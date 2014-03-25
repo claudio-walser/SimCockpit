@@ -4,7 +4,7 @@ function LuaExportStart()
 	package.cpath = package.cpath..";.\\LuaSocket\\?.dll"
 	socket = require("socket")
 	
-	host = host or "10.20.0.122"
+	host = host or "10.20.0.90"
 	port = port or 50007
 
 	c = socket.try(socket.connect(host, port))
