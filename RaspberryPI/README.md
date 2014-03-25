@@ -22,12 +22,12 @@ diagram
                                                 | Coming on socket 50007 to one raspi
                                                 |
                                                 |
-                                       +-----------------+
-                                       |     Raspi Main  |
-                                       |                 |
-                                       | Splitting R/P   |
-                                       +--+-----------+--+
-  Passing roll to raspi 1 on socket 50008 |           | Passing pitch to raspi 2 on socket 50008
+                                         +-----------------+
+                                         |     Raspi Main  |
+                                         |                 |
+                                         | Splitting R/P   |
+                                         +--+-----------+--+
+    Passing roll to raspi 1 on socket 50008 |           | Passing pitch to raspi 2 on socket 50008
                  +------------------+     |           |     +------------------+
                  |  raspi 1 control |     |           |     |  raspi 2 control |
                  |   stepper motor  |-----+           +-----|   stepper motor  |
