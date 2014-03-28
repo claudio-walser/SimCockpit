@@ -1,122 +1,92 @@
 #!/usr/bin/python
-
-from daemon import Daemon
 import sys
-import time
 import logging
-import socket
+import ConfigParser
 
-PIDFILE = '/var/run/simcockpit.pid'
-LOGFILE = '/var/log/simcockpit.log'
+from lib.Daemon import Daemon
+from lib.SimCockpitMain import SimCockpitMain
+from lib.SimCockpitRoll import SimCockpitRoll
+from lib.SimCockpitPitch import SimCockpitPitch
 
-HOST = '10.20.0.90'
-PORT = 50007
+# configuration
+config = ConfigParser.ConfigParser()
+config.read('config.cfg')
 
-PITCH_CLIENT = '10.20.0.90'
-PITCH_PORT = 50008
+# read daemon type, take main as default
+daemon = 'main'
+if len(sys.argv) == 3:
+	if sys.argv[2] in ['main', 'roll', 'pitch']:
+		daemon = sys.argv[2]
 
-ROLL_CLIENT = '10.20.0.92'
-ROLL_PORT = 50008
+# read main configuration
+PIDFILE = config.get(daemon, 'PIDFILE')
+LOGFILE = config.get(daemon, 'LOGFILE')
+HOST = config.get(daemon, 'HOST')
+PORT = config.get(daemon, 'PORT')
+
+# main daemon has roll and pitch daemon as client
+if daemon == 'main':
+	CLIENTS = [
+		{
+			'HOST': config.get('roll', 'HOST'),
+			'PORT': config.get('roll', 'PORT'),
+			'SOCKET': False,
+			'TYPE': 'roll'
+		}, {
+			'HOST': config.get('pitch', 'HOST'),
+			'PORT': config.get('pitch', 'PORT'),
+			'SOCKET': False,
+			'TYPE': 'pitch'
+		}
+	]
+else:
+	CLIENTS = []
+
 
 # Configure logging
 logging.basicConfig(filename=LOGFILE,level=logging.DEBUG)
 
-class SimCockpit(Daemon):
-
-	socket = ''
-	socketPitch = ''
-	socketRoll = ''
-
-
-	def initSocket(self):
-		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socketPitch = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socketRoll = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		
-		# listen on main port for game input
-		self.socket.bind((HOST, PORT))
-		self.socket.listen(5)
-
-		# connect pitch controller
-		self.socketPitch.connect((PITCH_CLIENT, PITCH_PORT))
-		self.socketRoll.connect((ROLL_CLIENT, ROLL_PORT))
-
-	def closeSocket(self):
-		if self.socket != '':
-			self.socket.close()
-		if self.socketPitch != '':
-			self.socketPitch.close()
-		if self.socketRoll != '':
-			self.socketRoll.close()
-
-	def receive(self):
-		(connection, address) = self.socket.accept()
-		data = True
-		while data:
-			data = connection.recv(4096)
-			
-			# extract pitch and roll and pass it to its engine controllers
-			lines = data.split("\n")
-			# not quite sure why, sometimes more lines are comming into this 4096 bytes, have to play with that
-			for line in lines:
-				if  line != '':
-					logging.debug(line)
-					values = line.split('|')
-					for value in values:
-					
-						label_value = value.split(':')
-						if len(label_value) == 2:
-							logging.debug(label_value)
-							logging.debug(len(label_value))
-							label = label_value[0]
-							value = label_value[1]
-							if label == 'Roll':
-								self.socketRoll.send(value)
-							elif label == 'Pitch':
-								self.socketPitch.send(value)
-
-			
-
-			
-			#self.socketPitch.send(data)
-			#self.socketRoll.send(data)
-			# log
-			#logging.debug(data)
-
-	def run(self):
-		self.initSocket()
-
-		while True:
-			#accept connections from outside
-			self.receive()
-		
-
-
+# main loop
 if __name__ == "__main__":
 
-	daemon = SimCockpit(PIDFILE)
+	# instantiate daemon and setup socket
+	if daemon == 'main':
+		simCockpit = SimCockpitMain(PIDFILE)
+		simCockpit.setClients(CLIENTS)
+	elif daemon == 'roll':
+		simCockpit = SimCockpitRoll(PIDFILE)
+	elif daemon == 'pitch':
+		simCockpit = SimCockpitPitch(PIDFILE)
+	else:
+		print "Unknown daemon: ", daemon
+		sys.exit(2)
 
-	if len(sys.argv) == 2:
-
+	# set host and port for listener socket
+	simCockpit.setHost(HOST)
+	simCockpit.setPort(PORT)
+	simCockpit.setLogging(logging)
+	
+	# start|stop|restart|status
+	if len(sys.argv) >= 2:
+		# start daemon
 		if 'start' == sys.argv[1]:
 			print "Starting ..."
 			try:
-				daemon.start()
+				simCockpit.start()
 			except:
 				pass
-
+		# stop daemon
 		elif 'stop' == sys.argv[1]:
 			print "Stopping ..."
-			daemon.closeSocket()
-			daemon.stop()
-
+			simCockpit.stop()
+		# restart daemon
 		elif 'restart' == sys.argv[1]:
 			print "Restaring ..."
-			daemon.restart()
-
+			simCockpit.restart()
+		# show status
 		elif 'status' == sys.argv[1]:
 			try:
-				pf = file(PIDFILE,'r')
+				pf = file(PIDFILE, 'r')
 				pid = int(pf.read().strip())
 				pf.close()
 			except IOError:
@@ -132,8 +102,8 @@ if __name__ == "__main__":
 		else:
 			print "Unknown command"
 			sys.exit(2)
-			sys.exit(0)
 	else:
-		print "usage: %s start|stop|restart|status" % sys.argv[0]
+		print "usage: %s start|stop|restart|status %s" %(sys.argv[0], daemon)
 		sys.exit(2)
+
 
