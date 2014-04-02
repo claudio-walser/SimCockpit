@@ -17,6 +17,9 @@ class SimCockpit(Daemon):
 	# private
 	socket = False
 
+	def init(self):
+		todo = True
+		
 	# set host ip to run listener socket on	
 	def setHost(self, host):
 		self.host = host

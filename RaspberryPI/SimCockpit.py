@@ -44,7 +44,8 @@ else:
 
 
 # Configure logging
-logging.basicConfig(filename=LOGFILE,level=logging.DEBUG)
+logging.basicConfig(filename=LOGFILE,level=logging.CRITICAL)
+logging.captureWarnings(True)
 
 # main loop
 if __name__ == "__main__":
@@ -62,6 +63,7 @@ if __name__ == "__main__":
 		sys.exit(2)
 
 	# set host and port for listener socket
+	simCockpit.init()
 	simCockpit.setHost(HOST)
 	simCockpit.setPort(PORT)
 	simCockpit.setLogging(logging)

@@ -69,3 +69,4 @@ class SimCockpitMain(SimCockpit):
 							self.socketRoll.send(value)
 						elif label == 'Pitch':
 							self.socketPitch.send(value)
+				time.sleep(0.0001)
