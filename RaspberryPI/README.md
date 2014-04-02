@@ -37,12 +37,13 @@ diagram
 
 ## Dependencies
  - python >= 2.5.x
- - [python-daemon](https://github.com/martinrusev/python-daemon/ "python-daemon") for daemonizing the socket server.
- - python-setuptools for installing python-daemon properly. On Raspbian just do 
+ - (no need anymore) [python-daemon](https://github.com/martinrusev/python-daemon/ "python-daemon") for daemonizing the socket server.
+   (its in this repo now, no installation needed)
+ - (no need anymore) python-setuptools for installing python-daemon properly. On Raspbian just do 
     apt-get install python-setuptools
 
 ## Installation
-Just copy the SimCockpit.py to any directory you want and make it executable.
+Copy the content of SimCockpit/RaspberryPI/ to your destinated directory and make SimCockpit.py executable.
 
 ## Usage
-    python /Path/To/Your/CodeBase/SimCockpit.py (start|stop|restart|status)
+    python /Path/To/Your/CodeBase/SimCockpit.py (start|stop|restart|status) (main|roll|pitch)
