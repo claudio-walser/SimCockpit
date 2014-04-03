@@ -149,7 +149,7 @@ class Motor():
 			stepMatrix = self.halfStepReverse
 			# does not work :(
 			#for index, step in enumerate(stepMatrix):
-			#	stepMatrix[index] = step
+			#	stepMatrix[index] = reversed(step)
 		
 
 		# loop to set pins
