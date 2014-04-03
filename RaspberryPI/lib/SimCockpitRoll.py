@@ -17,7 +17,8 @@ class SimCockpitRoll(SimCockpit):
 		self.logging.debug(data)
 		self.logging.debug(self.motor)
 		try:
-			self.motor.moveTo(float(data), 'clockwise', 'slow')
+			self.motor.moveTo(float(data), False, 0.25)
+			#self.motor.moveTo(float(data), 'clockwise', 'slow')
 		except Exception as (errno, strerror):
 			self.logging.debug("I/O error(%s): %s" % (errno, strerror))
 		
