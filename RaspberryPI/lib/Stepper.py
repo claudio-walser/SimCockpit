@@ -20,17 +20,9 @@ class Motor():
 	stepsPerRevolution = 512
 
 	# values from testing, table for speed value / seconds per full revolution (spr)
-	# speed   |   spr   |   ratio
-	# ---------------------------
-	#   128   |  4.00   |    34.5
-	#    70   |  6.15   |    13.0
-	#    30   | 11.25   |     3.5
-	#    20   | 14.70   |     2.0
-	#    10   | 21.50   |     0.9
-	#     0   | 42.00   |     0.2
 	maxSpeed = 128
 
-	# max degree the motor can do in a second, its actually 90, this is a little seurity gap
+	# max degree the motor can do in a second, its actually 90, there is a little seurity space
 	maxDegreePerSecond = 80
 
 	# motor half step matrix and the same for reverse
@@ -91,6 +83,11 @@ class Motor():
 			GPIO.output(pin, 0)
 
 	def moveTo(self, angle, speed, interval = False):
+		try:
+			angle = float(angle)
+		except ValueError:
+			return
+			
 		# make sure not bigger 360 and make 360 equals to zero
 		while angle > 360:
 			angle -= 360
@@ -101,13 +98,26 @@ class Motor():
 		# make sure angle is in possible stepper range
 		targetAngle = int(angle / degreePerStep) * degreePerStep
 
+
+		# calculate degree and direction
 		if self.currentAngle < targetAngle:
 			angleDifference = targetAngle - self.currentAngle
-			direction = 'clockwise'
+			# turn for more than 320 degree? Its a presign change at 180 degree
+			if angleDifference > (360 - (self.maxDegreePerSecond / (1 / interval))):
+				angleDifference = 360 - angleDifference
+				direction = 'counter-clockwise'
+			else:
+				direction = 'clockwise'
 		else:
 			angleDifference = self.currentAngle - targetAngle
-			direction = 'counter-clockwise'
-		
+			# turn for more than 320 degree? Its a presign change at 180 degree
+			if angleDifference > (360 - (self.maxDegreePerSecond / (1 / interval))):
+				angleDifference = 360 - angleDifference
+				direction = 'clockwise'
+			else:
+				direction = 'counter-clockwise'
+
+		# calculate steps for amount of degree
 		stepsToGo = angleDifference / degreePerStep
 
 		if interval == False:
@@ -115,13 +125,14 @@ class Motor():
 		else:
 			# check on max speed
 			if (self.maxDegreePerSecond / (1 / interval) + 0.5) < angleDifference:
-				
 				if self.logging != False:
 					self.logging.debug('Way too much boy, try next or as soon as you get close')
 	
 				return
-	
-			timeSleep = (interval - self.latency) / (stepsToGo * 10)
+
+			timeSleep = 0
+			if stepsToGo > 0:
+				timeSleep = (interval - self.latency) / (stepsToGo * 10)
 
 		self.move(stepsToGo, direction, speed, timeSleep)
 
@@ -130,8 +141,7 @@ class Motor():
 		self.currentAngle = targetAngle
 
 
-	def move(self, steps, direction, speed, timeSleep = False):		
-		
+	def move(self, steps, direction, speed, timeSleep = False):	
 		if timeSleep == False:
 			# check speed
 			if speed > self.maxSpeed:
@@ -148,17 +158,16 @@ class Motor():
 		if direction != 'clockwise':
 			stepMatrix = self.halfStepReverse
 			# does not work :(
+			# stepMatrix = reversed(stepMatrix)
 			#for index, step in enumerate(stepMatrix):
 			#	stepMatrix[index] = reversed(step)
 		
-
 		# loop to set pins
 		for i in range(int(steps)):
 			for step in stepMatrix:
 				for pin in range(len(self.pins)):
-					#print 'Set pin number GPIO%s to %s' % (self.pins[pin], step[pin])
 					GPIO.output(self.pins[pin], step[pin])
-				# play with the speed a little, dont go over 0.01
+				
 				time.sleep(sleep_time)
 
 		self.resetPins()

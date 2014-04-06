@@ -2,23 +2,23 @@
 from SimCockpit import SimCockpit
 from lib.Stepper import Motor
 
-# SimCockpit pitch processor
+# SimCockpit roll processor
 class SimCockpitRoll(SimCockpit):
 
 	motor = False
 
-	def init(self):
+	def init(self, logging):
+		super(SimCockpitRoll, self).init(logging)
+		
 		self.motor = Motor()
+		self.motor.setLogging(self.logging)
 		self.motor.initializePins()
 
 	def process(self, data):
-		# overwrite this function
-		#self.motor.moveTo(float(data), 'clockwise', 'slow')
+		# overwrite process function
 		self.logging.debug(data)
-		self.logging.debug(self.motor)
 		try:
-			self.motor.moveTo(float(data), False, 0.25)
-			#self.motor.moveTo(float(data), 'clockwise', 'slow')
+			self.motor.moveTo(float(data), False, 0.3)
 		except Exception as (errno, strerror):
 			self.logging.debug("I/O error(%s): %s" % (errno, strerror))
 		

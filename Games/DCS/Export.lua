@@ -33,8 +33,8 @@ function LuaExportActivityNextEvent(t)
 	local pitch,roll,yaw = LoGetADIPitchBankYaw()
 	local message = string.format("Roll:%.2f|Pitch:%.2f\n", radToDegree(roll), radToDegree(pitch))
 	socket.try(c:send(message))
-	-- run every 0.1 seconds
-	return t + 0.1
+	-- run every 0.3 seconds
+	return t + 0.3
 end
 
 -- convert radians to degree
